@@ -7,7 +7,6 @@ export default interface OrderMaster extends RowDataPacket {
   date: Date;
   order_number: number;
   client_id: number;
-  total_amount: number;
   created_at: Date;
   updated_at: Date;
   client: Client;

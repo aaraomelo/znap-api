@@ -18,14 +18,14 @@ class OrderItemRepository implements IOrderItemRepository {
   save(createOrderItemDTO: CreateOrderItemDTO): Promise<OrderItem> {
     return new Promise((resolve, reject) => {
       connection.query<ResultSetHeader>(
-        "INSERT INTO order_items (order_master_id, product_id, quantity, price, discount_percentage, tax_amount) VALUES (?, ?, ?, ?, ?, ?)",
+        "INSERT INTO order_items (order_master_id, product_id, quantity, price, discount_percentage, tax_percentage) VALUES (?, ?, ?, ?, ?, ?)",
         [
           createOrderItemDTO.order_master_id,
           createOrderItemDTO.product_id,
           createOrderItemDTO.quantity,
           createOrderItemDTO.price,
           createOrderItemDTO.discount_percentage,
-          createOrderItemDTO.tax_amount,
+          createOrderItemDTO.tax_percentage,
         ],
         (err, res) => {
           if (err) reject(err);
@@ -57,14 +57,14 @@ class OrderItemRepository implements IOrderItemRepository {
   ): Promise<OrderItem> {
     return new Promise((resolve, reject) => {
       connection.query<ResultSetHeader>(
-        "UPDATE order_items SET order_master_id = ?, product_id = ?, quantity = ?, price = ?, discount_percentage = ?, tax_amount = ? WHERE id = ?",
+        "UPDATE order_items SET order_master_id = ?, product_id = ?, quantity = ?, price = ?, discount_percentage = ?, tax_percentage = ? WHERE id = ?",
         [
           updateOrderItemDTO.order_master_id,
           updateOrderItemDTO.product_id,
           updateOrderItemDTO.quantity,
           updateOrderItemDTO.price,
           updateOrderItemDTO.discount_percentage,
-          updateOrderItemDTO.tax_amount,
+          updateOrderItemDTO.tax_percentage,
           orderItemId,
         ],
         (err) => {

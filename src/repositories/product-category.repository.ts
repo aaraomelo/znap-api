@@ -21,8 +21,8 @@ class ProductCategoryRepository implements IProductCategoryRepository {
   save(createCategoryDTO: CreateProductCategoryDTO): Promise<ProductCategory> {
     return new Promise((resolve, reject) => {
       connection.query<ResultSetHeader>(
-        "INSERT INTO product_categories (description, is_active) VALUES (?, ?)",
-        [createCategoryDTO.description, createCategoryDTO.is_active ?? true],
+        "INSERT INTO product_categories (name, description, is_active) VALUES (?, ?, ?)",
+        [createCategoryDTO.name, createCategoryDTO.description, createCategoryDTO.is_active ?? true],
         (err, res) => {
           if (err) reject(err);
           else
@@ -53,8 +53,9 @@ class ProductCategoryRepository implements IProductCategoryRepository {
   ): Promise<ProductCategory> {
     return new Promise((resolve, reject) => {
       connection.query<ResultSetHeader>(
-        "UPDATE product_categories SET description = ?, is_active = ? WHERE id = ?",
+        "UPDATE product_categories SET name = ?, description = ?, is_active = ? WHERE id = ?",
         [
+          updateCategoryDTO.name,
           updateCategoryDTO.description,
           updateCategoryDTO.is_active,
           productCategoryId,

@@ -9,5 +9,6 @@ export default (server: Server) => {
     clientRoutes(server);
     productRoutes(server);
     productCategoryRoutes(server);
+    orderMasterRoutes(server);
     orderItemRoutes(server);
 }

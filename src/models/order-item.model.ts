@@ -5,9 +5,8 @@ export default interface OrderItem extends RowDataPacket {
   order_master_id: number;
   product_id: number;
   quantity: number;
-  price: number;
   discount_percentage: number;
-  tax_amount: number;
+  tax_percentage: number;
   created_at: Date;
   updated_at: Date;
 }

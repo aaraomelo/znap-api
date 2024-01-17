@@ -4,7 +4,7 @@ interface CreateOrderItemDTO {
   quantity: number;
   price: number;
   discount_percentage?: number;
-  tax_amount?: number;
+  tax_percentage?: number;
 }
 
 interface UpdateOrderItemDTO extends Partial<CreateOrderItemDTO> {}
