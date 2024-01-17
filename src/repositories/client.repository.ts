@@ -1,36 +1,41 @@
 import { ResultSetHeader } from "mysql2";
 import connection from "../db";
 import Client from "../models/client.model";
+import { CreateClientDTO, UpdateClientDTO } from "../dto/client.dto";
 
 interface IClientRepository {
-  save(client: Client): Promise<Client>;
+  save(client: CreateClientDTO): Promise<Client>;
   retrieveById(clientId: number): Promise<Client | undefined>;
-  update(client: Client): Promise<number>;
+  update(clientId: number, updateClientDTO: UpdateClientDTO): Promise<Client>;
   delete(clientId: number): Promise<number>;
   deleteAll(): Promise<number>;
 }
 
 class ClientRepository implements IClientRepository {
-  save(client: Client): Promise<Client> {
+  save(createClientDTO: CreateClientDTO): Promise<Client> {
     return new Promise((resolve, reject) => {
       connection.query<ResultSetHeader>(
-        "INSERT INTO clients (name, email) VALUES(?,?)",
-        [client.name, client.email],
+        "INSERT INTO clients (name, email, phone_number) VALUES (?, ?, ?)",
+        [
+          createClientDTO.name,
+          createClientDTO.email,
+          createClientDTO.phone_number,
+        ],
         (err, res) => {
           if (err) reject(err);
           else
             this.retrieveById(res.insertId)
-              .then((clients) => resolve(clients!))
+              .then((savedClient) => resolve(savedClient!))
               .catch(reject);
         }
       );
     });
   }
 
-  retrieveById(clientId: number): Promise<Client> {
+  retrieveById(clientId: number): Promise<Client | undefined> {
     return new Promise((resolve, reject) => {
       connection.query<Client[]>(
-        "SELECT * FROM clients WHERE id = ?",
+        "SELECT * FROM client WHERE id = ?",
         [clientId],
         (err, res) => {
           if (err) reject(err);
@@ -40,14 +45,22 @@ class ClientRepository implements IClientRepository {
     });
   }
 
-  update(client: Client): Promise<number> {
+  update(clientId: number, updateClientDTO: UpdateClientDTO): Promise<Client> {
     return new Promise((resolve, reject) => {
       connection.query<ResultSetHeader>(
-        "UPDATE clients SET name = ?, email = ? WHERE id = ?",
-        [client.name, client.email, client.id],
-        (err, res) => {
+        "UPDATE client SET name = ?, email = ?, phone_number = ? WHERE id = ?",
+        [
+          updateClientDTO.name,
+          updateClientDTO.email,
+          updateClientDTO.phone_number,
+          clientId,
+        ],
+        (err) => {
           if (err) reject(err);
-          else resolve(res.affectedRows);
+          else
+            this.retrieveById(clientId)
+              .then((updatedClient) => resolve(updatedClient!))
+              .catch(reject);
         }
       );
     });
@@ -56,7 +69,7 @@ class ClientRepository implements IClientRepository {
   delete(clientId: number): Promise<number> {
     return new Promise((resolve, reject) => {
       connection.query<ResultSetHeader>(
-        "DELETE FROM clients WHERE id = ?",
+        "DELETE FROM client WHERE id = ?",
         [clientId],
         (err, res) => {
           if (err) reject(err);
@@ -68,7 +81,7 @@ class ClientRepository implements IClientRepository {
 
   deleteAll(): Promise<number> {
     return new Promise((resolve, reject) => {
-      connection.query<ResultSetHeader>("DELETE FROM clients", (err, res) => {
+      connection.query<ResultSetHeader>("DELETE FROM client", (err, res) => {
         if (err) reject(err);
         else resolve(res.affectedRows);
       });
