@@ -4,7 +4,7 @@ import {
   CreateProductCategoryDTO,
   UpdateProductCategoryDTO,
 } from "../dto/product-category.dto";
-import ProductCategory from "../models/product-category";
+import ProductCategory from "../models/product-category.model";
 
 interface IProductCategoryRepository {
   save(category: CreateProductCategoryDTO): Promise<ProductCategory>;

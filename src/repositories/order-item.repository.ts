@@ -1,7 +1,7 @@
 import { ResultSetHeader } from "mysql2";
 import connection from "../db";
 import { CreateOrderItemDTO, UpdateOrderItemDTO } from "../dto/order-item.dto";
-import OrderItem from "../models/order-item";
+import OrderItem from "../models/order-item.model";
 
 interface IOrderItemRepository {
   save(orderItem: CreateOrderItemDTO): Promise<OrderItem>;
