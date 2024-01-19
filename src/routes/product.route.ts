@@ -6,6 +6,7 @@ const productRoutes = (server: Server) => {
   server.get("/products/:id", productController.getById);
   server.put("/products/:id", productController.update);
   server.del("/products/:id", productController.delete);
+  server.get("/products", productController.getPaginated);
 };
 
 export default productRoutes;

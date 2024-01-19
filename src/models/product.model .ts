@@ -8,5 +8,5 @@ export default interface Product extends RowDataPacket {
   price: number;
   stock_quantity: number;
   category_id: number;
-  product_category: ProductCategory;
+  category: ProductCategory;
 }
