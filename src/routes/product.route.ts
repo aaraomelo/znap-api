@@ -7,6 +7,7 @@ const productRoutes = (server: Server) => {
   server.put("/products/:id", productController.update);
   server.del("/products/:id", productController.delete);
   server.get("/products", productController.getPaginated);
+  server.get("/products/autocomplete", productController.getAutocomplete);
 };
 
 export default productRoutes;

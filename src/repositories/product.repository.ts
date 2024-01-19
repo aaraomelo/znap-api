@@ -2,7 +2,7 @@ import { ResultSetHeader } from "mysql2";
 import connection from "../db";
 import { CreateProductDTO, UpdateProductDTO } from "../dto/product.dto";
 import Product from "../models/product.model ";
-import { formatObjectWithPrefix } from "../utils/db.utils";
+import { filterClauses, formatObjectWithPrefix } from "../utils/db.utils";
 
 interface IProductRepository {
   save(product: CreateProductDTO): Promise<Product>;
@@ -107,6 +107,36 @@ class ProductRepository implements IProductRepository {
     });
   }
 
+  getAutocomplete(
+    key: string,
+    value: string,
+    limit: number
+  ): Promise<{
+    data: any;
+  }> {
+    const clauses = filterClauses({ [key]: value });
+    return new Promise((resolve, reject) => {
+      const query = `
+        SELECT ${key} FROM product_categories AS category
+        RIGHT JOIN products AS product ON category.id = product.category_id
+        ${clauses ? `WHERE ${clauses}` : ""}
+        ORDER BY ${key} ASC
+      `;
+      connection.query<Product[]>(query, (err, res) => {
+        if (err) {
+          reject(err);
+        } else {
+          const firstItem = res[0];
+          const dynamicKey = firstItem ? Object.keys(firstItem)[0] : "";
+          const values = [...new Set(res.map((item) => item[dynamicKey]))];
+          resolve({
+            data: values.slice(0, limit),
+          });
+        }
+      });
+    });
+  }
+
   getPaginated(
     page: number,
     itemsPerPage: number,
@@ -120,28 +150,13 @@ class ProductRepository implements IProductRepository {
     totalPages: number;
   }> {
     const offset = (page - 1) * itemsPerPage;
-    const filterClauses = Object.entries(filters)
-      .filter(([_, value]) => value)
-      .map(([key, value]) =>
-        value
-          .split(" ")
-          .reduce(
-            (accumulator: string, currentValue: string, index: number) => {
-              return `${accumulator} ${
-                index !== 0 ? "OR" : ""
-              } ${key} LIKE '%${currentValue}%'`;
-            },
-            ""
-          )
-      )
-      .join(" AND ");
-
+    const clauses = filterClauses(filters);
     return new Promise((resolve, reject) => {
       const query = `
         SELECT product.*, category.id AS category_id, category.name AS category_name, category.description AS category_description
         FROM product_categories AS category
         RIGHT JOIN products AS product ON category.id = product.category_id
-        ${filterClauses ? `WHERE ${filterClauses}` : ""}
+        ${clauses ? `WHERE ${clauses}` : ""}
         ORDER BY ${sortKey} ${sortOrder}
         LIMIT ${itemsPerPage}
         OFFSET ${offset}
@@ -165,28 +180,13 @@ class ProductRepository implements IProductRepository {
   }
 
   count(filters: Record<string, any>): Promise<number> {
-    const filterClauses = Object.entries(filters)
-      .filter(([key, value]) => value)
-      .map(([key, value]) =>
-        value
-          .split(" ")
-          .reduce(
-            (accumulator: string, currentValue: string, index: number) => {
-              return `${accumulator} ${
-                index !== 0 ? "OR" : ""
-              } ${key} LIKE '%${currentValue}%'`;
-            },
-            ""
-          )
-      )
-      .join(" AND ");
-
+    const clauses = filterClauses(filters);
     return new Promise((resolve, reject) => {
       const query = `
         SELECT  COUNT(*) AS count
         FROM product_categories AS category
         RIGHT JOIN products AS product ON category.id = product.category_id
-        ${filterClauses ? `WHERE ${filterClauses}` : ""}
+        ${clauses ? `WHERE ${clauses}` : ""}
       `;
       connection.query(query, (err: any, res: Array<{ count: number }>) => {
         if (err) {

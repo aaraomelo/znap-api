@@ -79,16 +79,19 @@ class ProductController {
   async getPaginated(req: Request, res: Response, next: Next) {
     try {
       const page: number = parseInt(req.query.page as string, 10) || 1;
-      const itemsPerPage: number = parseInt(req.query.itemsPerPage as string, 10) || 10;
+      const itemsPerPage: number =
+        parseInt(req.query.itemsPerPage as string, 10) || 10;
       const filters: Record<string, any> = {
-        "product.name": req.query.name as string,
-        "product.description": req.query.description as string,
-        "category.name": req.query["category.name"] as string,
-        "category.description": req.query["category.description"] as string,
+        "product.name": req.query.name,
+        "product.description": req.query.description,
+        "product.price": req.query.price,
+        "product.stock_quantity": req.query.stock_quantity,
+        "category.name": req.query["category.name"],
+        "category.description": req.query["category.description"],
       };
-      const sortKey: string = (req.query.sortKey as string) || "id";
+      const sortKey: string = req.query.sortKey || "id";
       const sortOrder: "asc" | "desc" =
-        (req.query.sortOrder as string) === "desc" ? "desc" : "asc";
+        req.query.sortOrder === "desc" ? "desc" : "asc";
       const result = await productRepository.getPaginated(
         page,
         itemsPerPage,
@@ -96,6 +99,37 @@ class ProductController {
         sortKey,
         sortOrder
       );
+      res.send(StatusCodes.OK, result);
+    } catch (error) {
+      console.error("Error fetching products:", error);
+      res.send(StatusCodes.INTERNAL_SERVER_ERROR, "Internal Server Error");
+    } finally {
+      next();
+    }
+  }
+
+  async getAutocomplete(req: Request, res: Response, next: Next) {
+    try {
+      const filters: Record<string, any> = {
+        "product.name": req.query.name,
+        "product.description": req.query.description,
+        "product.price": req.query.price,
+        "product.stock_quantity": req.query.stock_quantity,
+        "category.name": req.query["category.name"],
+        "category.description": req.query["category.description"],
+      };
+
+      let key = "product.name";
+      let value = "";
+      for (const filterKey in filters) {
+        if (filters[filterKey] !== undefined) {
+          key = filterKey;
+          value = filters[filterKey];
+          break;
+        }
+      }
+      const limit: number = parseInt(req.query.limit as string, 10) || 10;
+      const result = await productRepository.getAutocomplete(key, value, limit);
       res.send(StatusCodes.OK, result);
     } catch (error) {
       console.error("Error fetching products:", error);
