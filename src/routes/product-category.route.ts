@@ -6,6 +6,7 @@ const productCategoryRoutes = (server: Server) => {
   server.get("/product-categories/:id", productCategoryController.getById);
   server.put("/product-categories/:id", productCategoryController.update);
   server.del("/product-categories/:id", productCategoryController.delete);
+  server.get("/product-categories", productCategoryController.getPaginated);
 };
 
 export default productCategoryRoutes;

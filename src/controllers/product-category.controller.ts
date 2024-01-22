@@ -4,6 +4,7 @@ import {
   CreateProductCategoryDTO,
   UpdateProductCategoryDTO,
 } from "../dto/product-category.dto";
+import { StatusCodes } from "http-status-codes";
 
 class ProductCategoryController {
   async create(req: Request, res: Response, next: Next) {
@@ -77,6 +78,36 @@ class ProductCategoryController {
         res.send(500, "Internal Server Error");
         return next();
       });
+  }
+
+  async getPaginated(req: Request, res: Response, next: Next) {
+    try {
+      const page: number = parseInt(req.query.page as string, 10) || 1;
+      const itemsPerPage: number =
+        parseInt(req.query.itemsPerPage as string, 10) || 10;
+      const filters: Record<string, any> = {
+        "category.name": req.query.name,
+        "category.description": req.query.description,
+        "category.is_active": req.query.isActive ?? "1",
+      };
+
+      const sortKey: string = req.query.sortKey || "id";
+      const sortOrder: "asc" | "desc" =
+        req.query.sortOrder === "desc" ? "desc" : "asc";
+      const result = await productCategoryRepository.getPaginated(
+        page,
+        itemsPerPage,
+        filters,
+        sortKey,
+        sortOrder
+      );
+      res.send(StatusCodes.OK, result);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      res.send(StatusCodes.INTERNAL_SERVER_ERROR, "Internal Server Error");
+    } finally {
+      next();
+    }
   }
 }
 
